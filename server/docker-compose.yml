@@ -13,8 +13,7 @@ services:
       - ./zbx_env/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
       - ./zbx_env/var/lib/zabbix/snmptraps:/var/lib/zabbix/snmptraps:ro
     environment:
-      DB_SERVER_HOST: '192.168.0.25'
-      DB_SERVER_PORT: 3307
+      DB_SERVER_HOST: 'mysql-server'
       MYSQL_USER: 'root'
       MYSQL_PASSWORD: 'password'
     depends_on:
@@ -23,7 +22,6 @@ services:
   mysql-server:
     image: mysql
     user: root
-    #command: [mysqld, --character-set-server=utf8, --collation-server=utf8_bin, --default-authentication-plugin=mysql_native_password]
     ports:
       - 3307:3306
     environment:
@@ -40,32 +38,29 @@ services:
     ports:
       - 8200:8080
 
-zabbix-web-nginx-mysql:
-  image: zabbix/zabbix-web-nginx-mysql:alpine-4.2-latest
-  ports:
-   - "8081:80"
-   - "8443:443"
-  links:
-   - mysql-server:mysql-server
-   - zabbix-server:zabbix-server
-  volumes:
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro
-   - ./zbx_env/etc/ssl/nginx:/etc/ssl/nginx:ros
-  env_file:
-   - .env_db_mysql
-   - .env_web
-  user: root
-  depends_on:
-   - mysql-server
-   - zabbix-server
-  stop_grace_period: 10s
-  sysctls:
-   - net.core.somaxconn=65535
-  labels:
-   com.zabbix.description: "Zabbix frontend on Nginx web-server with MySQL database support"
-   com.zabbix.company: "Zabbix SIA"
-   com.zabbix.component: "zabbix-frontend"
-   com.zabbix.webserver: "nginx"
-   com.zabbix.dbtype: "mysql"
-   com.zabbix.os: "alpine"
+  zabbix-web-nginx-mysql:
+    image: zabbix/zabbix-web-nginx-mysql:alpine-4.2-latest
+    ports:
+     - "8081:80"
+     - "8443:443"
+    links:
+     - mysql-server:mysql-server
+     - zabbix-server:zabbix-server
+    environment:
+      DB_SERVER_HOST: 'mysql-server'
+      MYSQL_USER: 'root'
+      MYSQL_PASSWORD: 'password'
+    user: root
+    depends_on:
+     - mysql-server
+     - zabbix-server
+    stop_grace_period: 10s
+    sysctls:
+     - net.core.somaxconn=65535
+    labels:
+     com.zabbix.description: "Zabbix frontend on Nginx web-server with MySQL database support"
+     com.zabbix.company: "Zabbix SIA"
+     com.zabbix.component: "zabbix-frontend"
+     com.zabbix.webserver: "nginx"
+     com.zabbix.dbtype: "mysql"
+     com.zabbix.os: "alpine"
