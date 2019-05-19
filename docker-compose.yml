@@ -5,8 +5,6 @@ services:
     ports:
       - "10051:10051"
     volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro 
       - ./zbx_env/usr/lib/zabbix/alertscripts:/usr/lib/zabbix/alertscripts:ro
       - ./zbx_env/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:ro
       - ./zbx_env/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
@@ -14,7 +12,15 @@ services:
       - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
       - ./zbx_env/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
       - ./zbx_env/var/lib/zabbix/snmptraps:/var/lib/zabbix/snmptraps:ro
+    depends_on:
+      - mysql-server
 
-  mysql:
+  mysql-server:
     image: "mysql"
     user: root
+    command: [mysqld, --character-set-server=utf8, --collation-server=utf8_bin, --default-authentication-plugin=mysql_native_password]
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_ROOT_PASSWORD: 'password'
+    volumes:
+      - ./zbx_env/var/lib/mysql:/var/lib/mysql:rw
